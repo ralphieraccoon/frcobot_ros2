@@ -1,0 +1,7 @@
+<library path="ros2_control_frcobot">
+    <class name="ros2_control_frcobot/FrCobotSystemHardware" type="ros2_control_frcobot::FrCobotSystemHardware" base_class_type="hardware_interface::SystemInterface">
+        <description>
+            ros2_control hardware interface for fair innovation cobots. 
+        </description>
+    </class>
+</library>
