@@ -65,11 +65,12 @@ namespace ros2_control_frcobot
 
         hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
         hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+        hw_efforts_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
         hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
         for (const hardware_interface::ComponentInfo &joint : info_.joints)
         {
-            // FrCobotSystem has exactly two states and one command interface on each joint
+            // FrCobotSystem has exactly three states and one command interface on each joint
             if (joint.command_interfaces.size() != 1)
             {
                 RCLCPP_FATAL(
@@ -88,7 +89,7 @@ namespace ros2_control_frcobot
                 return hardware_interface::CallbackReturn::ERROR;
             }
 
-            if (joint.state_interfaces.size() != 2)
+            if (joint.state_interfaces.size() != 3)
             {
                 RCLCPP_FATAL(
                     rclcpp::get_logger("FrCobotSystemHardware"),
@@ -114,6 +115,15 @@ namespace ros2_control_frcobot
                     joint.state_interfaces[1].name.c_str(), hardware_interface::HW_IF_VELOCITY);
                 return hardware_interface::CallbackReturn::ERROR;
             }
+
+            if (joint.state_interfaces[2].name != hardware_interface::HW_IF_EFFORT)
+            {
+                RCLCPP_FATAL(
+                    rclcpp::get_logger("FrCobotSystemHardware"),
+                    "Joint '%s' have '%s' as second state interface. '%s' expected.", joint.name.c_str(),
+                    joint.state_interfaces[2].name.c_str(), hardware_interface::HW_IF_EFFORT);
+                return hardware_interface::CallbackReturn::ERROR;
+            }
         }
 
         return hardware_interface::CallbackReturn::SUCCESS;
@@ -128,6 +138,8 @@ namespace ros2_control_frcobot
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
             state_interfaces.emplace_back(hardware_interface::StateInterface(
                 info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &hw_efforts_[i]));
         }
 
         return state_interfaces;
@@ -156,6 +168,7 @@ namespace ros2_control_frcobot
             {
                 hw_positions_[i] = 0;
                 hw_velocities_[i] = 0;
+                hw_efforts_[i] = 0;
                 hw_commands_[i] = 0;
             }
         }
@@ -181,6 +194,7 @@ namespace ros2_control_frcobot
 
         status = recieveJointData("GetActualJointPosDegree", hw_positions_);
         status = recieveJointData("GetActualJointSpeedsDegree", hw_velocities_);
+        status = recieveJointData("GetJointTorques", hw_efforts_);
 
         return status;
     }
@@ -215,13 +229,14 @@ namespace ros2_control_frcobot
         return hardware_interface::return_type::OK;
     }
 
-    hardware_interface::return_type FrCobotSystemHardware::recieveJointData(std::string command, std::vector<double> &data)
+    hardware_interface::return_type FrCobotSystemHardware::recieveJointData(int command_id, std::string command, std::vector<double> &data)
     {
 
         int send_length_sta = 0;
 
         len = strlen(command.c_str());
-        sprintf(sendStaLine, "/f/bIII123III375III%dIII%s()III/b/f", len, command.c_str());
+        sprintf(sendStaLine, "/f/bIII123III%dIII%dIII%s()III/b/f", command_id, len + 2, command.c_str());
+        sendStaLine = base.command_factry();
         send_length_sta = send(confd, sendStaLine, sizeof(sendStaLine), 0);
         if (send_length_sta < 0)
         {
@@ -247,6 +262,8 @@ namespace ros2_control_frcobot
             tempJoints = tempJoints.substr(pos);
         }
         pos = tempJoints.find("III");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Test: " << "/f/bIII123III375III" << len + 2 << "III" << command << "()III/b/f");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Test: " << recvLine);
         jointsDataLen = stoi(tempJoints.substr(0, pos));
         tempJoints = tempJoints.substr(pos + 3, jointsDataLen);
         for (int i = 0; i < 6; i++)

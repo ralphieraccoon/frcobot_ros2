@@ -32,6 +32,8 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
+#include "ros2_control_frcobot/visibility_control.h"
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
@@ -80,6 +82,7 @@ namespace ros2_control_frcobot
         std::vector<double> hw_commands_;
         std::vector<double> hw_positions_;
         std::vector<double> hw_velocities_;
+        std::vector<double> hw_efforts_;
     };
 
 } // namespace ros2_control_frcobot

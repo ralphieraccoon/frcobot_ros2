@@ -88,14 +88,17 @@ ROS_API::ROS_API(const std::string node_name):FRAPI_base(),rclcpp::Node(node_nam
     );
 
     _controller_ip = "192.168.58.2";//控制器默认ip地址
-    std::cout << "开始创建指令TCP socket" << std::endl;
+    // std::cout << "开始创建指令TCP socket" << std::endl;
+    RCLCPP_INFO(this->get_logger(), "Starting TCP socket connection...");
     _socketfd1 = socket(AF_INET,SOCK_STREAM,0);
     _socketfd2 = socket(AF_INET,SOCK_STREAM,0);
     if(_socketfd1 == -1 || _socketfd2 == -1){
-        std::cout << "错误: 创建socket失败！" << std::endl;
+        // std::cout << "错误: 创建socket失败！" << std::endl;
+        RCLCPP_ERROR(this->get_logger(), "Failed to create socket.");
         exit(0);//创建套字失败，丢出错误
     }else{
-        std::cout << "创建指令socket成功，开始连接控制器..." << std::endl;
+        // std::cout << "创建指令socket成功，开始连接控制器..." << std::endl;
+        RCLCPP_INFO(this->get_logger(), "TCP socket connection started. Connecting to controller...");
         struct sockaddr_in tcp_client1,tcp_client2;
         tcp_client1.sin_family = AF_INET;
         tcp_client2.sin_family = AF_INET;
@@ -108,10 +111,13 @@ ROS_API::ROS_API(const std::string node_name):FRAPI_base(),rclcpp::Node(node_nam
         int res1 = connect(_socketfd1,(struct sockaddr *)&tcp_client1,sizeof(tcp_client1));
         int res2 = connect(_socketfd2,(struct sockaddr *)&tcp_client2,sizeof(tcp_client2));
         if(res1 || res2){
-            std::cout << "错误:无法连接控制器数据端口，程序退出!" << std::endl;
+            // RCLCPP_ERROR_STREAM(this->get_logger(), res1 << " " << res2);
+            // std::cout << "错误:无法连接控制器数据端口，程序退出!" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Unable to connect to controller data port.");
             exit(0);//连接失败，丢出错误并返回
         }else{
-            std::cout << "控制器指令端口连接成功" << std::endl;
+            // std::cout << "控制器指令端口连接成功" << std::endl;
+            RCLCPP_INFO(this->get_logger(), "Controller connected.");
             int flags1 = fcntl(_socketfd1,F_GETFL,0);
             int flags2 = fcntl(_socketfd2,F_GETFL,0);
             fcntl(_socketfd1,F_SETFL,flags1|SOCK_NONBLOCK);
@@ -253,15 +259,18 @@ int ROS_API::_send_data_factory_callback(std::string data){
                     return -2001;
                 }else if(_recv_data_cmdcount == _cmd_counter){//id和帧计数器能对上，说明对应回复信息是正确的
                     //std::cout << "设置函数接口返回参数" << std::endl;
+                    // RCLCPP_INFO(this->get_logger(), "Returning Recieved Data.");
                     return _recv_data_res;
                 }else{
                     //std::cout << "未处理的情况,默认返回0" << std::endl;
+                    // RCLCPP_INFO(this->get_logger(), "Returning Zero.");
                     return 0;
                 }
             }
         }
     }else{
         _skip_answer_flag = 0;
+        // RCLCPP_INFO(this->get_logger(), "Returning Zero.");
         return 0;
     }
     //std::cout << "接受指令反馈超时" << std::endl;
@@ -285,7 +294,8 @@ int ROS_API::_ParseRecvData(std::string str){
                     _kin_res[i] = atof(kin_match[i+1].str().c_str());
                 }
             }else{
-                std::cout << "解析错误:运动学接口返回信息错误" << std::endl;
+                // std::cout << "解析错误:运动学接口返回信息错误" << std::endl;
+                RCLCPP_ERROR(this->get_logger(), "Kinematics interface returned information error.");
                 return 0;
             }
             return 1;
@@ -295,7 +305,8 @@ int ROS_API::_ParseRecvData(std::string str){
         }
         //_mtx.unlock();
     }else{
-        std::cout << "解析错误：收到通讯信息不完整，丢弃该帧内容" << std::endl;
+        // std::cout << "解析错误：收到通讯信息不完整，丢弃该帧内容" << std::endl;
+        RCLCPP_WARN(this->get_logger(), "Incomplete communication information received, discarding frame content.");
         return 0;
     }
 }
@@ -318,18 +329,22 @@ void ROS_API::_ParseROSCommandData_callback(const std::shared_ptr<frhal_msgs::sr
             }else{
                 _selectfunc(func_name);
                 if(funcP == NULL){
-                    std::cout << "指令错误: 找不到该指令对应的函数" << std::endl;
+                    // std::cout << "指令错误: 找不到该指令对应的函数" << std::endl;
+                    RCLCPP_ERROR_STREAM(this->get_logger(), "The function corresponding to the command " << req->cmd_str << " cannot be found.");
                     res->cmd_res = std::string("0");
                 }else{
+                    RCLCPP_DEBUG(this->get_logger(), "Command successfully parsed.");
                     res->cmd_res = std::to_string((this->*(ROS_API::funcP))(para_list));
                 }
             }
         }else{
-            std::cout << "指令错误:函数参数输入不合法，参数列表由字母，数字和逗号组成，不能有空格出现" <<std::endl;
+            // std::cout << "指令错误:函数参数输入不合法，参数列表由字母，数字和逗号组成，不能有空格出现" <<std::endl;
+            RCLCPP_ERROR_STREAM(this->get_logger(), "The function parameter input of " << req->cmd_str << " is illegal. The parameter list must consist of only alphanumeric characters and commas, and there must be no spaces.");
             res->cmd_res = std::string("0");
         }
     }else{
-        std::cout << "指令错误:函数输入形式错误，函数输入必须是 [函数名]() 这种输入形式，请重新输入" << std::endl;
+        // std::cout << "指令错误:函数输入形式错误，函数输入必须是 [函数名]() 这种输入形式，请重新输入" << std::endl;
+        RCLCPP_ERROR_STREAM(this->get_logger(), "The function input string " << req->cmd_str << " is improperly formatted. It must be of the structure [function name]().");
         res->cmd_res = std::string("0");
     }
 }

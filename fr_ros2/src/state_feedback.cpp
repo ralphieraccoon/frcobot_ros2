@@ -8,13 +8,16 @@ state_recv_thread::state_recv_thread(const std::string node_name):rclcpp::Node(n
 {
     using namespace std::chrono_literals;
     _controller_ip = "192.168.58.2";//控制器默认ip地址
-    std::cout << "开始创建状态反馈TCP socket" << std::endl;
+    // std::cout << "开始创建状态反馈TCP socket" << std::endl;
+    RCLCPP_INFO(this->get_logger(), "Starting TCP socket connection...");
     _socketfd1 = socket(AF_INET,SOCK_STREAM,0);//状态获取端口只有TCP
     if(_socketfd1 == -1){
-        std::cout << "错误: 创建socket失败！" << std::endl;
+        // std::cout << "错误: 创建socket失败！" << std::endl;
+        RCLCPP_ERROR(this->get_logger(), "Failed to create socket.");
         exit(0);//创建套字失败，丢出错误
     }else{
-        std::cout << "创建状态反馈socket成功，开始连接控制器..." << std::endl;
+        // std::cout << "创建状态反馈socket成功，开始连接控制器..." << std::endl;
+        RCLCPP_INFO(this->get_logger(), "TCP socket connection started. Connecting to controller...");
         struct sockaddr_in tcp_client1;
         tcp_client1.sin_family = AF_INET;
         tcp_client1.sin_port = htons(port1);//8083端口
@@ -23,10 +26,13 @@ state_recv_thread::state_recv_thread(const std::string node_name):rclcpp::Node(n
         //尝试连接控制器
         int res1 = connect(_socketfd1,(struct sockaddr *)&tcp_client1,sizeof(tcp_client1));
         if(res1){
-            std::cout << "错误:无法连接控制器数据端口，程序退出!" << std::endl;
+            // RCLCPP_ERROR_STREAM(this->get_logger(), res1 << " " << _controller_ip.c_str() << " " << port1);
+            // std::cout << "错误:无法连接控制器数据端口，程序退出!" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Unable to connect to controller data port.");
             exit(0);//连接失败，丢出错误并返回
         }else{
-            std::cout << "控制器状态端口连接成功" << std::endl;
+            // std::cout << "控制器状态端口连接成功" << std::endl;
+            RCLCPP_INFO(this->get_logger(), "Controller connected.");
             //将socket设置成非阻塞模式
             int flags1 = fcntl(_socketfd1,F_GETFL,0);
             fcntl(_socketfd1,F_SETFL,flags1|SOCK_NONBLOCK);
