@@ -63,7 +63,7 @@ namespace ros2_control_frcobot
         hardware_interface::return_type write(
             const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
-        virtual hardware_interface::return_type recieveJointData(std::string command, std::vector<double> &data);
+        virtual hardware_interface::return_type recieveJointData(std::string command, uint16_t &count, std::vector<double> &data);
 
         // virtual void enforceLimits(rclcpp::Duration &period);
 
@@ -79,10 +79,15 @@ namespace ros2_control_frcobot
         char send_buf[MAXLINE];
         struct sockaddr_in serverSendAddr;
 
-        std::vector<double> hw_commands_;
-        std::vector<double> hw_positions_;
-        std::vector<double> hw_velocities_;
-        std::vector<double> hw_efforts_;
+        std::vector<double> hw_commands_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        std::vector<double> hw_positions_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+        std::vector<double> hw_velocities_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+        std::vector<double> hw_efforts_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+
+        uint16_t command_count_ = 123;
+        uint16_t position_count_ = 123;
+        uint16_t velocity_count_ = 123;
+        uint16_t effort_count_ = 123;
     };
 
 } // namespace ros2_control_frcobot

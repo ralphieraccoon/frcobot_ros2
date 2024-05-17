@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#define MAXLINE 4096
+
 #include "ros2_control_frcobot/frcobot_system.hpp"
 #include <math.h>
 #include <unistd.h>
@@ -126,6 +128,8 @@ namespace ros2_control_frcobot
             }
         }
 
+        recieveJointData("GetActualJointPosRadian", position_count_, hw_commands_); // Setting current position commands to current robot position.
+
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
@@ -192,23 +196,24 @@ namespace ros2_control_frcobot
     {
         hardware_interface::return_type status;
 
-        status = recieveJointData("GetActualJointPosDegree", hw_positions_);
-        status = recieveJointData("GetActualJointSpeedsDegree", hw_velocities_);
-        status = recieveJointData("GetJointTorques", hw_efforts_);
+        status = recieveJointData("GetActualJointPosRadian", position_count_, hw_positions_);
+        status = recieveJointData("GetActualJointSpeedsRadian", velocity_count_, hw_velocities_);
+        status = recieveJointData("GetJointTorques", effort_count_, hw_efforts_);
 
         return status;
     }
 
     hardware_interface::return_type FrCobotSystemHardware::write(
-        const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
+        const rclcpp::Time & /*time*/, const rclcpp::Duration &period)
     {
 
         // enforceLimits(period);
 
-        sprintf(send_buf, "ServoJ(%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f)", hw_commands_[0], hw_commands_[1], hw_commands_[2], hw_commands_[3], hw_commands_[4], hw_commands_[5], 0.0, 0.0, hardware_interface::stod(info_.hardware_parameters["delta_time"]), 0.0, 0.0);
-
+        sprintf(send_buf, "ServoJ(%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f)", hw_commands_[0] * 180 / M_PI, hw_commands_[1] * 180 / M_PI, hw_commands_[2] * 180 / M_PI, hw_commands_[3] * 180 / M_PI, hw_commands_[4] * 180 / M_PI, hw_commands_[5] * 180 / M_PI, 0.0, 0.0, 0.002, 0.002, 0.0);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "ServoJ Command: " << send_buf);
         len = strlen(send_buf);
-        sprintf(sendCmdLine, "/f/bIII123III376III%dIII%sIII/b/f", len, send_buf);
+        sprintf(sendCmdLine, "/f/bIII%dIII376III%dIII%sIII/b/f", command_count_, len, send_buf);
+        command_count_++;
 
         int send_length = 0;
         send_length = send(confd, sendCmdLine, sizeof(sendCmdLine), 0);
@@ -229,14 +234,14 @@ namespace ros2_control_frcobot
         return hardware_interface::return_type::OK;
     }
 
-    hardware_interface::return_type FrCobotSystemHardware::recieveJointData(int command_id, std::string command, std::vector<double> &data)
+    hardware_interface::return_type FrCobotSystemHardware::recieveJointData(std::string command, uint16_t &count, std::vector<double> &data)
     {
 
         int send_length_sta = 0;
 
         len = strlen(command.c_str());
-        sprintf(sendStaLine, "/f/bIII123III%dIII%dIII%s()III/b/f", command_id, len + 2, command.c_str());
-        sendStaLine = base.command_factry();
+        sprintf(sendStaLine, "/f/bIII%dIII377III%dIII%s()III/b/f", count, len + 2, command.c_str());
+        count++;
         send_length_sta = send(confd, sendStaLine, sizeof(sendStaLine), 0);
         if (send_length_sta < 0)
         {
@@ -262,17 +267,25 @@ namespace ros2_control_frcobot
             tempJoints = tempJoints.substr(pos);
         }
         pos = tempJoints.find("III");
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Test: " << "/f/bIII123III375III" << len + 2 << "III" << command << "()III/b/f");
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Test: " << recvLine);
-        jointsDataLen = stoi(tempJoints.substr(0, pos));
-        tempJoints = tempJoints.substr(pos + 3, jointsDataLen);
-        for (int i = 0; i < 6; i++)
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Test: " << "/f/bIII" << count << "III377III" << len + 2 << "III" << command << "()III/b/f");
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Joints: " << tempJoints);
+        try
         {
-            pos = tempJoints.find(",");
-            data[i] = stof(tempJoints.substr(0, pos));
-            tempJoints = tempJoints.substr(pos + 1);
+            jointsDataLen = stoi(tempJoints.substr(0, pos));
+            tempJoints = tempJoints.substr(pos + 3, jointsDataLen);
+            for (int i = 0; i < 6; i++)
+            {
+                pos = tempJoints.find(",");
+                data[i] = stof(tempJoints.substr(0, pos));
+                tempJoints = tempJoints.substr(pos + 1);
+            }
+            return hardware_interface::return_type::OK;
         }
-        return hardware_interface::return_type::OK;
+        catch (...)
+        {
+            RCLCPP_ERROR_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "Return data malformed. Should be list of six joint values, is '" << tempJoints << "'");
+            return hardware_interface::return_type::ERROR;
+        }
     }
 
     // void FrCobotSystemHardware::enforceLimits(rclcpp::Duration &period)
