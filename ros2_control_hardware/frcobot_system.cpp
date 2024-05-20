@@ -128,8 +128,6 @@ namespace ros2_control_frcobot
             }
         }
 
-        recieveJointData("GetActualJointPosRadian", position_count_, hw_commands_); // Setting current position commands to current robot position.
-
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
@@ -165,19 +163,12 @@ namespace ros2_control_frcobot
         const rclcpp_lifecycle::State & /*previous_state*/)
     {
 
-        // set some default values
-        for (auto i = 0u; i < hw_positions_.size(); i++)
-        {
-            if (std::isnan(hw_positions_[i]))
-            {
-                hw_positions_[i] = 0;
-                hw_velocities_[i] = 0;
-                hw_efforts_[i] = 0;
-                hw_commands_[i] = 0;
-            }
-        }
+        hardware_interface::return_type status = hardware_interface::return_type::ERROR;
 
-        RCLCPP_INFO(rclcpp::get_logger("FrCobotSystemHardware"), "Successfully activated!");
+        while (status != hardware_interface::return_type::OK)
+        {
+            status = recieveJointData("GetActualJointPosRadian", hw_commands_); // Setting current position commands to current robot position.
+        }
 
         return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -196,15 +187,15 @@ namespace ros2_control_frcobot
     {
         hardware_interface::return_type status;
 
-        status = recieveJointData("GetActualJointPosRadian", position_count_, hw_positions_);
-        status = recieveJointData("GetActualJointSpeedsRadian", velocity_count_, hw_velocities_);
-        status = recieveJointData("GetJointTorques", effort_count_, hw_efforts_);
+        status = recieveJointData("GetActualJointPosRadian", hw_positions_);
+        status = recieveJointData("GetActualJointSpeedsRadian", hw_velocities_);
+        status = recieveJointData("GetJointTorques", hw_efforts_);
 
         return status;
     }
 
     hardware_interface::return_type FrCobotSystemHardware::write(
-        const rclcpp::Time & /*time*/, const rclcpp::Duration &period)
+        const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
 
         // enforceLimits(period);
@@ -212,8 +203,7 @@ namespace ros2_control_frcobot
         sprintf(send_buf, "ServoJ(%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f)", hw_commands_[0] * 180 / M_PI, hw_commands_[1] * 180 / M_PI, hw_commands_[2] * 180 / M_PI, hw_commands_[3] * 180 / M_PI, hw_commands_[4] * 180 / M_PI, hw_commands_[5] * 180 / M_PI, 0.0, 0.0, 0.002, 0.002, 0.0);
         // RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), "ServoJ Command: " << send_buf);
         len = strlen(send_buf);
-        sprintf(sendCmdLine, "/f/bIII%dIII376III%dIII%sIII/b/f", command_count_, len, send_buf);
-        command_count_++;
+        sprintf(sendCmdLine, "/f/bIII123III376III%dIII%sIII/b/f", len, send_buf);
 
         int send_length = 0;
         send_length = send(confd, sendCmdLine, sizeof(sendCmdLine), 0);
@@ -234,14 +224,13 @@ namespace ros2_control_frcobot
         return hardware_interface::return_type::OK;
     }
 
-    hardware_interface::return_type FrCobotSystemHardware::recieveJointData(std::string command, uint16_t &count, std::vector<double> &data)
+    hardware_interface::return_type FrCobotSystemHardware::recieveJointData(std::string command, std::vector<double> &data)
     {
 
         int send_length_sta = 0;
 
         len = strlen(command.c_str());
-        sprintf(sendStaLine, "/f/bIII%dIII377III%dIII%s()III/b/f", count, len + 2, command.c_str());
-        count++;
+        sprintf(sendStaLine, "/f/bIII123III377III%dIII%s()III/b/f", len + 2, command.c_str());
         send_length_sta = send(confd, sendStaLine, sizeof(sendStaLine), 0);
         if (send_length_sta < 0)
         {
