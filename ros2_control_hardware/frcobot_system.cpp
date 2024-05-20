@@ -165,11 +165,12 @@ namespace ros2_control_frcobot
 
         hardware_interface::return_type status = hardware_interface::return_type::ERROR;
 
-        while (status != hardware_interface::return_type::OK)
+        while (status != hardware_interface::return_type::OK && std::any_of(hw_commands_.begin(), hw_commands_.end(), [](int i)
+                                                                            { return (i == 1 || std::isnan(i)); }))
         {
             status = recieveJointData("GetActualJointPosRadian", hw_commands_); // Setting current position commands to current robot position.
         }
-
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("FrCobotSystemHardware"), std::to_string(hw_commands_[0]) << ", " << std::to_string(hw_commands_[1]) << ", " << std::to_string(hw_commands_[2]) << ", " << std::to_string(hw_commands_[3]) << ", " << std::to_string(hw_commands_[4]) << ", " << std::to_string(hw_commands_[5]));
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
