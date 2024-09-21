@@ -76,11 +76,11 @@ std::vector<hardware_interface::StateInterface> FairinoHardwareInterface::export
     state_interfaces.emplace_back(hardware_interface::StateInterface(
         info_.joints[i].name, hardware_interface::HW_IF_POSITION, &_jnt_position_state[i]));
 
-    // state_interfaces.emplace_back(hardware_interface::StateInterface(
-    //     info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &_jnt_velocity_state.at(i)));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &_jnt_velocity_state[i]));
 
-    // state_interfaces.emplace_back(hardware_interface::StateInterface(
-    //     info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_state.at(i)));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_state[i]));
   }
 
   //导出
@@ -95,7 +95,7 @@ std::vector<hardware_interface::CommandInterface> FairinoHardwareInterface::expo
         info_.joints[i].name, hardware_interface::HW_IF_POSITION, &_jnt_position_command[i]));
 
 //     command_interfaces.emplace_back(hardware_interface::CommandInterface(//预留的扭矩控制接口
-//         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_command.at(i)));
+//         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_command[i]));
   }
 
   return command_interfaces;

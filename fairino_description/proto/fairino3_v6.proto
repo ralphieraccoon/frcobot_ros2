@@ -1,0 +1,321 @@
+#VRML_SIM R2023b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the fairino3_v6
+# Extracted from: ../urdf/fairino3_v6.urdf
+
+PROTO fairino3_v6_robot [
+  field  SFVec3f     translation     0 0 0
+  field  SFRotation  rotation        0 0 1 0
+  field  SFString    name            "fairino3_v6_robot"  # Is `Robot.name`.
+  field  SFString    controller      "void"         # Is `Robot.controller`.
+  field  MFString    controllerArgs  []             # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""             # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE          # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE           # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE          # Is `Robot.selfCollision`.
+  field  MFNode      toolSlot        []             # Extend the robot with new nodes at the end of the arm.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    children [
+      Shape {
+        appearance DEF base_link_material PBRAppearance {
+          baseColor 0.898040 0.917650 0.929410
+          roughness 1.000000
+          metalness 0
+        }
+        geometry DEF base_link Mesh {
+          url "../meshes/fairino3_v6/base_link.STL"
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000000 0.000000 1.000000
+        }
+        device [
+          RotationalMotor {
+            name "j1"
+            maxVelocity 3.15
+            minPosition -3.0543
+            maxPosition 3.0543
+            maxTorque 150.0
+          }
+          PositionSensor {
+            name "j1_sensor"
+          }
+        ]
+        endPoint Solid {
+          children [
+            Shape {
+              appearance DEF shoulder_link_material PBRAppearance {
+                baseColor 0.898040 0.917650 0.929410
+                roughness 1.000000
+                metalness 0
+              }
+              geometry DEF shoulder_link Mesh {
+                url "../meshes/fairino3_v6/shoulder_link.STL"
+              }
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000000 -1.000000 -0.000004
+                anchor 0.000000 0.000000 0.140000
+              }
+              device [
+                RotationalMotor {
+                  name "j2"
+                  maxVelocity 3.15
+                  minPosition -4.6251
+                  maxPosition 1.4835
+                  maxTorque 150.0
+                }
+                PositionSensor {
+                  name "j2_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 0.140000
+                rotation 1.000000 0.000000 0.000000 1.570800
+                children [
+                  Shape {
+                    appearance DEF upperarm_link_material PBRAppearance {
+                      baseColor 0.898040 0.917650 0.929410
+                      roughness 1.000000
+                      metalness 0
+                    }
+                    geometry DEF upperarm_link Mesh {
+                      url "../meshes/fairino3_v6/upperarm_link.STL"
+                    }
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 0.000000 1.000000
+                      anchor -0.280000 0.000000 0.000000
+                    }
+                    device [
+                      RotationalMotor {
+                        name "j3"
+                        maxVelocity 3.15
+                        minPosition -2.8274
+                        maxPosition 2.8274
+                        maxTorque 150.0
+                      }
+                      PositionSensor {
+                        name "j3_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation -0.280000 0.000000 0.000000
+                      children [
+                        Shape {
+                          appearance DEF forearm_link_material PBRAppearance {
+                            baseColor 0.898040 0.917650 0.929410
+                            roughness 1.000000
+                            metalness 0
+                          }
+                          geometry DEF forearm_link Mesh {
+                            url "../meshes/fairino3_v6/forearm_link.STL"
+                          }
+                        }
+                        HingeJoint {
+                          jointParameters HingeJointParameters {
+                            axis 0.000000 0.000000 1.000000
+                            anchor -0.240010 0.000000 0.000000
+                          }
+                          device [
+                            RotationalMotor {
+                              name "j4"
+                              maxVelocity 3.2
+                              minPosition -4.6251
+                              maxPosition 1.4835
+                              maxTorque 28.0
+                            }
+                            PositionSensor {
+                              name "j4_sensor"
+                            }
+                          ]
+                          endPoint Solid {
+                            translation -0.240010 0.000000 0.000000
+                            children [
+                              Shape {
+                                appearance DEF wrist1_link_material PBRAppearance {
+                                  baseColor 0.898040 0.917650 0.929410
+                                  roughness 1.000000
+                                  metalness 0
+                                }
+                                geometry DEF wrist1_link Mesh {
+                                  url "../meshes/fairino3_v6/wrist1_link.STL"
+                                }
+                              }
+                              HingeJoint {
+                                jointParameters HingeJointParameters {
+                                  axis 0.000000 -1.000000 -0.000004
+                                  anchor 0.000000 0.000000 0.102000
+                                }
+                                device [
+                                  RotationalMotor {
+                                    name "j5"
+                                    maxVelocity 3.2
+                                    minPosition -3.0543
+                                    maxPosition 3.0543
+                                    maxTorque 28.0
+                                  }
+                                  PositionSensor {
+                                    name "j5_sensor"
+                                  }
+                                ]
+                                endPoint Solid {
+                                  translation 0.000000 0.000000 0.102000
+                                  rotation 1.000000 0.000000 0.000000 1.570800
+                                  children [
+                                    Shape {
+                                      appearance DEF wrist2_link_material PBRAppearance {
+                                        baseColor 0.898040 0.917650 0.929410
+                                        roughness 1.000000
+                                        metalness 0
+                                      }
+                                      geometry DEF wrist2_link Mesh {
+                                        url "../meshes/fairino3_v6/wrist2_link.STL"
+                                      }
+                                    }
+                                    HingeJoint {
+                                      jointParameters HingeJointParameters {
+                                        axis 0.000000 1.000000 -0.000004
+                                        anchor 0.000000 0.000000 0.102000
+                                      }
+                                      device [
+                                        RotationalMotor {
+                                          name "j6"
+                                          maxVelocity 3.2
+                                          minPosition -3.0543
+                                          maxPosition 3.0543
+                                          maxTorque 28.0
+                                        }
+                                        PositionSensor {
+                                          name "j6_sensor"
+                                        }
+                                      ]
+                                      endPoint Solid {
+                                        translation 0.000000 0.000000 0.102000
+                                        rotation -1.000000 0.000000 0.000000 1.570800
+                                        children [
+                                          Shape {
+                                            appearance DEF wrist3_link_material PBRAppearance {
+                                              baseColor 0.898040 0.917650 0.929410
+                                              roughness 1.000000
+                                              metalness 0
+                                            }
+                                            geometry DEF wrist3_link Mesh {
+                                              url "../meshes/fairino3_v6/wrist3_link.STL"
+                                            }
+                                          }
+                                          Group {
+                                            children IS toolSlot
+                                          }
+                                        ]
+                                        name "wrist3_link"
+                                        boundingObject USE wrist3_link
+                                        physics Physics {
+                                          density -1
+                                          mass 0.538770
+                                          centerOfMass [ 0.000076 0.000014 0.076619 ]
+                                          inertiaMatrix [
+                                            2.878500e-04 2.889600e-04 4.265500e-04
+                                            -2.058400e-09 -1.389200e-07 1.811500e-07
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                  name "wrist2_link"
+                                  boundingObject USE wrist2_link
+                                  physics Physics {
+                                    density -1
+                                    mass 1.596100
+                                    centerOfMass [ -0.000000 0.003467 0.098292 ]
+                                    inertiaMatrix [
+                                      2.011200e-03 1.452400e-03 1.907600e-03
+                                      6.808600e-09 -2.494500e-08 -3.251100e-05
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                            name "wrist1_link"
+                            boundingObject USE wrist1_link
+                            physics Physics {
+                              density -1
+                              mass 1.596100
+                              centerOfMass [ 0.000000 -0.003467 0.098292 ]
+                              inertiaMatrix [
+                                2.011200e-03 1.452400e-03 1.907600e-03
+                                6.808500e-09 2.494500e-08 3.251100e-05
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                      name "forearm_link"
+                      boundingObject USE forearm_link
+                      physics Physics {
+                        density -1
+                        mass 2.231200
+                        centerOfMass [ -0.189870 0.000005 0.003415 ]
+                        inertiaMatrix [
+                          2.885200e-03 3.514500e-03 2.918600e-03
+                          7.338900e-07 -3.537300e-05 -2.852700e-07
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "upperarm_link"
+                boundingObject USE upperarm_link
+                physics Physics {
+                  density -1
+                  mass 4.805300
+                  centerOfMass [ -0.141110 0.000003 0.110530 ]
+                  inertiaMatrix [
+                    7.594500e-03 8.131700e-03 5.923100e-03
+                    3.714300e-07 -7.922800e-12 -1.291800e-11
+                  ]
+                }
+              }
+            }
+          ]
+          name "shoulder_link"
+          boundingObject USE shoulder_link
+          physics Physics {
+            density -1
+            mass 2.122500
+            centerOfMass [ -0.000000 -0.002418 0.135190 ]
+            inertiaMatrix [
+              3.322700e-03 3.241900e-03 2.312900e-03
+              -5.064800e-08 -6.340100e-09 4.376800e-05
+            ]
+          }
+        }
+      }
+    ]
+    name IS name
+    boundingObject USE base_link
+    physics Physics {
+      density -1
+      mass 0.783930
+      centerOfMass [ -0.000490 -0.000451 0.032527 ]
+      inertiaMatrix [
+        1.385400e-03 1.384900e-03 1.977000e-03
+        1.145500e-05 -1.064200e-05 -9.743500e-06
+      ]
+    }
+  }
+}

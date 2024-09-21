@@ -1,12 +1,13 @@
 # MoveIt uses this configuration for controller management
+ros_control_namespace: /fairino3_v6
 
-moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+moveit_controller_manager: moveit_ros_control_interface/Ros2ControlManager
 
-moveit_simple_controller_manager:
+moveit_ros_control_interface:
   controller_names:
-    - fairino3_controller
+    - fairino3_v6/fairino3_moveit_controller
 
-  fairino3_controller:
+  fairino3_moveit_controller:
     type: FollowJointTrajectory
     action_ns: follow_joint_trajectory
     default: true
@@ -17,5 +18,4 @@ moveit_simple_controller_manager:
       - j4
       - j5
       - j6
-    action_ns: follow_joint_trajectory
     default: true
