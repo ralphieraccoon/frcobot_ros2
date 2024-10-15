@@ -170,8 +170,8 @@ FR_rt_state& fairino_robot::read(){
 void fairino_robot::write(double cmd[6], double a_tl, double a_cl[2], double d_tl, double d_cl){
 //通过xmlrpc库写入servoj指令
 
-    std::bitset<8> d_tl_bits(d_tl);
-    std::bitset<16> d_cl_bits(d_cl);
+    std::bitset<8> d_tl_bits((uint8_t) d_tl);
+    std::bitset<16> d_cl_bits((uint16_t) d_cl);
 
     XmlRpc::XmlRpcValue Args, result;
 
