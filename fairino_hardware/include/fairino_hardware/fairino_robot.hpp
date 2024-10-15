@@ -22,7 +22,7 @@ public:
     int initpositioncontrol();
     int stoprobot();
     FR_rt_state& read();
-    void write(double cmd[6]);//servoJ and servoJT
+    void write(double cmd[6], double a_tl, double a_cl[2], double d_tl, double d_cl);//servoJ and servoJT
     friend class FairinoHardwareInterface;
 protected:
     std::string _controller_ip;

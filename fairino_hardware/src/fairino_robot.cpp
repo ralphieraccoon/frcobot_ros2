@@ -1,5 +1,5 @@
 #include "fairino_hardware/fairino_robot.hpp"
-
+#include <bitset>
 namespace fairino_hardware{
 
 fairino_robot::fairino_robot(){
@@ -167,10 +167,15 @@ FR_rt_state& fairino_robot::read(){
 }
 
 
-void fairino_robot::write(double cmd[6]){
+void fairino_robot::write(double cmd[6], double a_tl, double a_cl[2], double d_tl, double d_cl){
 //通过xmlrpc库写入servoj指令
+
+    std::bitset<8> d_tl_bits(d_tl);
+    std::bitset<16> d_cl_bits(d_cl);
+
+    XmlRpc::XmlRpcValue Args, result;
+
     if(_control_mode == POSITION_CONTROL_MODE){//位置控制模式
-        XmlRpc::XmlRpcValue Args, result;
         for(int i=0;i<6;i++){
             Args[0][i] = cmd[i];//赋值位置指令
         }
@@ -193,6 +198,78 @@ void fairino_robot::write(double cmd[6]){
         }
     }else if(_control_mode == TORQUE_CONTROL_MODE){
 
+    }
+
+    Args.clear();
+    Args[0] = 0;
+    Args[1] = a_tl * 40.95;
+    Args[2] = 1;
+    try{
+        if (_xml_client_ptr->execute("SetToolAO", Args, result)){
+                    if(int(result) != 0){
+                        RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:收到指令反馈错误代码%d",int(result));    
+                    }
+                }else{
+                    RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令未发送成功");    
+                }
+        }catch(XmlRpc::XmlRpcException e){
+                RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令发送出现异常!信息:%s",e.getMessage().c_str());    
+    }
+
+    Args.clear();
+    for(int i=0;i<6;i++){
+        Args[0] = i;
+        Args[1] = a_cl[i] * 40.95;
+        Args[2] = 1;
+        try{
+            if (_xml_client_ptr->execute("SetAO", Args, result)){
+                        if(int(result) != 0){
+                            RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:收到指令反馈错误代码%d",int(result));    
+                        }
+                    }else{
+                        RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令未发送成功");    
+                    }
+            }catch(XmlRpc::XmlRpcException e){
+                    RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令发送出现异常!信息:%s",e.getMessage().c_str());    
+        }
+    }
+
+    Args.clear();
+    for(int i=0;i<8;i++){
+        Args[0] = i;
+        Args[1] = d_tl_bits[i];
+        Args[2] = 1;
+        Args[3] = 1;
+        try{
+            if (_xml_client_ptr->execute("SetToolDO", Args, result)){
+                        if(int(result) != 0){
+                            RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:收到指令反馈错误代码%d",int(result));    
+                        }
+                    }else{
+                        RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令未发送成功");    
+                    }
+            }catch(XmlRpc::XmlRpcException e){
+                    RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令发送出现异常!信息:%s",e.getMessage().c_str());    
+        }
+    }
+
+    Args.clear();
+    for(int i=0;i<16;i++){
+        Args[0] = i;
+        Args[1] = d_tl_bits[i];
+        Args[2] = 1;
+        Args[3] = 1;
+        try{
+            if (_xml_client_ptr->execute("SetDO", Args, result)){
+                        if(int(result) != 0){
+                            RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:收到指令反馈错误代码%d",int(result));    
+                        }
+                    }else{
+                        RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令未发送成功");    
+                    }
+            }catch(XmlRpc::XmlRpcException e){
+                    RCLCPP_INFO(rclcpp::get_logger("FrHardwareInterface"),"fairino_robot:指令发送出现异常!信息:%s",e.getMessage().c_str());    
+        }
     }
 }
 

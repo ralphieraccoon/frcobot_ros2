@@ -62,7 +62,20 @@
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
-
+      <gpio name="tool_IO">
+        <command_interface name="AI0"/>
+        <command_interface name="DI0-7"/>
+        <state_interface name="AO0"/>
+        <state_interface name="DO0-7"/>
+      </gpio>
+      <gpio name="controller_IO">
+        <command_interface name="AI0"/>
+        <command_interface name="AI1"/>
+        <command_interface name="DI0-15"/>
+        <state_interface name="AO0"/>
+        <state_interface name="AO1"/>
+        <state_interface name="DO0-15"/>
+      </gpio>
     </ros2_control>
   </xacro:macro>
 </robot>

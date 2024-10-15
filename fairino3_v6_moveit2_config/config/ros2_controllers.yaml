@@ -9,6 +9,9 @@ fairino3_v6/controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    gpio_controller:
+      type: fairino_hardware/GPIOController
+
 fairino3_v6/fairino3_controller:
   ros__parameters:
     joints:
@@ -22,3 +25,18 @@ fairino3_v6/fairino3_controller:
       - position
     state_interfaces:
       - position
+
+fairino3_v6/gpio_controller:
+  ros__parameters:
+    inputs:
+     - tool_IO/AI0
+     - tool_IO/DI0-7
+     - controller_IO/AI0
+     - controller_IO/AI1
+     - controller_IO/DI0-15
+    outputs:
+     - tool_IO/AO0
+     - tool_IO/DO0-7
+     - controller_IO/AO0
+     - controller_IO/AO1
+     - controller_IO/DO0-15

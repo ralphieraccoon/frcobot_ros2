@@ -1,5 +1,5 @@
 #include "fairino_hardware/fairino_hardware_interface.hpp"
-
+#include <string>
 namespace fairino_hardware{
 
 hardware_interface::CallbackReturn FairinoHardwareInterface::on_init(const hardware_interface::HardwareInfo& sysinfo){
@@ -83,6 +83,15 @@ std::vector<hardware_interface::StateInterface> FairinoHardwareInterface::export
         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_state[i]));
   }
 
+  state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("tool_IO"), std::string("AO0"), &_analog_tl_state));
+
+  for (size_t i = 0; i < 2; ++i){
+    state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("controller_IO"), std::string("AO").append(std::to_string(i)), &_analog_cl_states[i]));
+  }
+
+  state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("tool_IO"), std::string("DO0-7"), &_digital_tl_states));
+  state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("controller_IO"), std::string("DO0-15"), &_digital_cl_states));
+
   //导出
   return state_interfaces;
 }
@@ -97,6 +106,15 @@ std::vector<hardware_interface::CommandInterface> FairinoHardwareInterface::expo
 //     command_interfaces.emplace_back(hardware_interface::CommandInterface(//预留的扭矩控制接口
 //         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_command[i]));
   }
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("tool_IO"), std::string("AI0"), &_analog_tl_command));
+
+  for (size_t i = 0; i < 2; ++i){
+    command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("controller_IO"), std::string("AI").append(std::to_string(i)), &_analog_cl_commands[i]));
+  }
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("tool_IO"), std::string("DI0-7"), &_digital_tl_commands));
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("controller_IO"), std::string("DI0-15"), &_digital_cl_commands));
 
   return command_interfaces;
 }
@@ -116,6 +134,16 @@ hardware_interface::CallbackReturn FairinoHardwareInterface::on_activate(const r
         _jnt_position_state[i] = 0;
         _jnt_velocity_state[i] = 0;
         _jnt_torque_state[i] = 0;
+    }
+    _digital_cl_commands = 0;
+    _digital_cl_states = 0;
+    _digital_tl_commands = 0;
+    _digital_tl_states = 0;
+    _analog_tl_command = 0.0;
+    _analog_tl_state = 0.0;
+    for(int i=0;i<2;i++){
+        _analog_cl_commands[i] = 0;
+        _analog_cl_states[i] = 0;
     }
     _ptr_robot->initpositioncontrol();//当只开放位置控制的时候，默认激活位置控制
     rclcpp::sleep_for(200ms);//等待一段时间让控制器的TCP连接建立完毕
@@ -160,6 +188,15 @@ hardware_interface::return_type FairinoHardwareInterface::read(const rclcpp::Tim
         _jnt_position_state[i] = state_data.jt_cur_pos[i]/180.0*M_PI;//注意单位转换，moveit统一用弧度
         //_jnt_torque_state[i] = state_data.jt_cur_tor[i];//注意单位转换
     }
+
+    _digital_cl_states = state_data.cl_dgt_input_l + (state_data.cl_dgt_input_h << 8);
+    _digital_tl_states = state_data.tl_dgt_input_l;
+    _analog_tl_state = (double)(state_data.tl_analog_input / 40.95);
+
+    for(int i=0;i<2;i++){
+        _analog_cl_states[i] = (double)(state_data.cl_analog_input[i] / 40.95);
+    }
+
     //RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "System successfully read: %f,%f,%f,%f,%f,%f",_jnt_position_state[0],\
     _jnt_position_state[1],_jnt_position_state[2],_jnt_position_state[3],_jnt_position_state[4],_jnt_position_state[5]);
 
@@ -178,13 +215,13 @@ hardware_interface::return_type FairinoHardwareInterface::write(const rclcpp::Ti
         for(auto j=0;j<6;j++){
             cmd[j] = _jnt_position_command[j]/M_PI*180; 
         }
-        _ptr_robot->write(cmd);//注意单位转换
+        _ptr_robot->write(cmd, _analog_tl_command, _analog_cl_commands, _digital_tl_commands, _digital_cl_commands);//注意单位转换
     }else if(_ptr_robot->_control_mode == TORQUE_CONTROL_MODE){
         if (std::any_of(&_jnt_torque_command[0], &_jnt_torque_command[5],\
             [](double c) { return not std::isfinite(c); })) {
             return hardware_interface::return_type::ERROR;
         }
-        _ptr_robot->write(_jnt_torque_command);//注意单位转换
+        _ptr_robot->write(_jnt_torque_command, _analog_tl_command, _analog_cl_commands, _digital_tl_commands, _digital_cl_commands);//注意单位转换
     }else{
         RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "指令发送错误:未识别当前所处控制模式");
         return hardware_interface::return_type::ERROR;

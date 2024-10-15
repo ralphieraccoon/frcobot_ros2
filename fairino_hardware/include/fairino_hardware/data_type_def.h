@@ -380,7 +380,7 @@ typedef struct _rt_state{
 	uint8_t  cl_dgt_input_l;//Digital input 7-0
 	uint8_t  tl_dgt_input_l;//tool Digital input 7-0
 	uint16_t cl_analog_input[2];//Control box analog input
-	uint16_t tl_anglog_input; //Tool analog input
+	uint16_t tl_analog_input; //Tool analog input
 	double   ft_sensor_raw_data[6];//Force/torque sensor raw data
 	double   ft_sensor_data[6];//Force/torque sensor data
 	uint8_t  ft_sensor_active;//Force/torque sensor active status, 0-reset, 1-activated
