@@ -4,6 +4,11 @@
     <xacro:property name="initial_positions" value="${load_yaml(initial_positions_file)['initial_positions']}"/>
 
     <webots>
+      <device reference="chuck_connector" type="Connector">
+        <ros>
+          <topicName>/chuck_connector</topicName>
+        </ros>
+      </device>
       <plugin type="webots_ros2_control::Ros2Control"/>
     </webots>
 
