@@ -218,7 +218,8 @@ PROTO fairino3_v6 [
                                               url "../meshes/fairino3_v6/wrist3_link.STL"
                                             }
                                           }
-                                          Group {
+                                          Pose {
+                                            translation 0.000000 0.000000 0.100000
                                             children IS toolSlot
                                           }
                                         ]
