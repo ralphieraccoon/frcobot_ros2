@@ -458,4 +458,14 @@
       k_position="15"
       k_velocity="10" />
   </joint>
+  <link name="end_effector" />
+  <joint name="eef" type="fixed">
+      <origin
+      xyz="0 0 0.100"
+      rpy="0 0 0" />
+    <parent
+      link="wrist3_link" />
+    <child
+      link="end_effector" />
+  </joint>
 </robot>
