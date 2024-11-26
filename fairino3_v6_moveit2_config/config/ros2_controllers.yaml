@@ -25,6 +25,7 @@ fairino3_v6/fairino3_controller:
       - position
     state_interfaces:
       - position
+    allow_nonzero_velocity_at_trajectory_end: true
 
 fairino3_v6/gpio_controller:
   ros__parameters:
