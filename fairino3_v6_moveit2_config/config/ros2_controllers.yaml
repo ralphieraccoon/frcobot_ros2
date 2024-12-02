@@ -1,5 +1,5 @@
 # This config file is used by ros2_control
-fairino3_v6/controller_manager:
+/fairino3_v6/controller_manager:
   ros__parameters:
     update_rate: 100  # Hz
 
@@ -12,7 +12,7 @@ fairino3_v6/controller_manager:
     gpio_controller:
       type: fairino_hardware/GPIOController
 
-fairino3_v6/fairino3_controller:
+/fairino3_v6/fairino3_controller:
   ros__parameters:
     joints:
       - j1
@@ -27,7 +27,7 @@ fairino3_v6/fairino3_controller:
       - position
     allow_nonzero_velocity_at_trajectory_end: true
 
-fairino3_v6/gpio_controller:
+/fairino3_v6/gpio_controller:
   ros__parameters:
     inputs:
      - tool_IO/AI0
