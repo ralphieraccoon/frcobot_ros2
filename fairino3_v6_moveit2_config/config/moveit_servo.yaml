@@ -1,5 +1,5 @@
 publish_period: 0.01
-max_expected_latency: 5.0
+max_expected_latency: 2.0
 
 command_in_type: "speed_units"
 scale:
