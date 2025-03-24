@@ -34,7 +34,7 @@ hardware_interface::CallbackReturn FairinoHardwareInterface::on_init(const hardw
 
 
         //关节状态部分
-        if (joint.state_interfaces.size() != 1) {
+        if (joint.state_interfaces.size() != 3) {
             RCLCPP_FATAL(rclcpp::get_logger("FairinoHardwareInterface"), "Joint '%s' has %zu state interface. 3 expected.",
                         joint.name.c_str(), joint.state_interfaces.size());
             return hardware_interface::CallbackReturn::ERROR;

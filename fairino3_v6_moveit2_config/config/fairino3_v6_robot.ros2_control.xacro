@@ -42,6 +42,8 @@
         <state_interface name="position">
           <param name="initial_value">${initial_positions['j3']}</param>
         </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
       </joint>
       <joint name="j4">
         <command_interface name="position"/>
