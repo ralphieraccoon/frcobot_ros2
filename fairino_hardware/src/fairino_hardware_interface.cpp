@@ -256,6 +256,12 @@ namespace fairino_hardware
             {
                 RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "ServoJ指令下发错误,错误码:%d", returncode);
             }
+            for 
+            int returncode = _ptr_robot->SetDO(&cmd,&extcmd,0,0,0.008,0,0);
+            if (returncode != 0)
+            {
+                RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "SetDO指令下发错误,错误码:%d", returncode);
+            }
         }
         else if (_control_mode == 1)
         { // 扭矩控制模式
