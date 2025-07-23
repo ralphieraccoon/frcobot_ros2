@@ -24,8 +24,8 @@ public:
   FAIRINO_HARDWARE_PUBLIC
   hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo& info) override;
 
-  //FAIRINO_HARDWARE_PUBLIC
-  //hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State &) override;
+  FAIRINO_HARDWARE_PUBLIC
+  hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State &) override;
 
   FAIRINO_HARDWARE_PUBLIC
   hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
@@ -33,11 +33,11 @@ public:
   FAIRINO_HARDWARE_PUBLIC
   hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
   
-  FAIRINO_HARDWARE_PUBLIC
-  std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+  // FAIRINO_HARDWARE_PUBLIC
+  // std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
   
-  FAIRINO_HARDWARE_PUBLIC
-  std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+  // FAIRINO_HARDWARE_PUBLIC
+  // std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
   
   // hardware_interface::return_type prepare_command_mode_switch(
   //   const std::vector<std::string> & start_interfaces,
@@ -53,14 +53,14 @@ public:
   hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
   
 private:
-  double _jnt_position_command[6];
-  double _jnt_velocity_command[6];
-  double _jnt_torque_command[6];
-  double _jnt_position_state[6];
-  double _jnt_velocity_state[6];
-  double _jnt_torque_state[6];
-  double _hw_gpio_in[42];
-  double _hw_gpio_out[21];
+  // double _jnt_position_command[6];
+  // double _jnt_velocity_command[6];
+  // double _jnt_torque_command[6];
+  // double _jnt_position_state[6];
+  // double _jnt_velocity_state[6];
+  // double _jnt_torque_state[6];
+  // double _hw_gpio_in[42];
+  // double _hw_gpio_out[21];
   int _control_mode;
   std::string _controller_ip = CONTROLLER_IP_ADDRESS;
   std::unique_ptr<FRRobot> _ptr_robot;
