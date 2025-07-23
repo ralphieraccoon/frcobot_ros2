@@ -27,17 +27,97 @@
       - position
     allow_nonzero_velocity_at_trajectory_end: true
 
-/fairino3_v6/gpio_controller:
+# /fairino3_v6/gpio_controller:
+#   ros__parameters:
+#     inputs:
+#      - tool_IO/AI0
+#      - tool_IO/DI0
+#      - controller_IO/AI0
+#      - controller_IO/AI1
+#      - controller_IO/DI0-15
+#     outputs:
+#      - tool_IO/AO0
+#      - tool_IO/DO0-7
+#      - controller_IO/AO0
+#      - controller_IO/AO1
+#      - controller_IO/DO0-15
+
+/fairino3_v6/gpio_command_controller:
   ros__parameters:
-    inputs:
-     - tool_IO/AI0
-     - tool_IO/DI0-7
-     - controller_IO/AI0
-     - controller_IO/AI1
-     - controller_IO/DI0-15
-    outputs:
-     - tool_IO/AO0
-     - tool_IO/DO0-7
-     - controller_IO/AO0
-     - controller_IO/AO1
-     - controller_IO/DO0-15
+    type: gpio_controllers/GpioCommandController
+    gpios:
+      - ControlBox
+      - Tool
+    command_interfaces:
+      control_box_IO:
+        - interfaces:
+          - AO0
+          - AO1
+          - DO0
+          - DO1
+          - DO2
+          - DO3
+          - DO4
+          - DO5
+          - DO6
+          - DO7
+          - DO8
+          - DO9
+          - DO10
+          - DO11
+          - DO12
+          - DO13
+          - DO14
+          - DO15
+      tool_IO:
+        - interfaces:
+          - AO0
+          - DO0
+          - DO1
+    state_interfaces:
+      control_box_IO:
+        - interfaces:
+          - AO0
+          - AO1
+          - AI0
+          - AI1
+          - DO0
+          - DO1
+          - DO2
+          - DO3
+          - DO4
+          - DO5
+          - DO6
+          - DO7
+          - DO8
+          - DO9
+          - DO10
+          - DO11
+          - DO12
+          - DO13
+          - DO14
+          - DO15
+          - DO0
+          - DI1
+          - DI2
+          - DI3
+          - DI4
+          - DI5
+          - DI6
+          - DI7
+          - DI8
+          - DI9
+          - DI10
+          - DI11
+          - DI12
+          - DI13
+          - DI14
+          - DI15
+      tool_IO:
+          - AO0
+          - AI0
+          - DO0
+          - DO1
+          - DI0
+          - DI1
+      Tool:

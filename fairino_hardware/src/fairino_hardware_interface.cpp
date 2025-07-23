@@ -71,61 +71,96 @@ namespace fairino_hardware
         return hardware_interface::CallbackReturn::SUCCESS;
     } // end on_init
 
-    std::vector<hardware_interface::StateInterface> FairinoHardwareInterface::export_state_interfaces()
+    hardware_interface::CallbackReturn FairinoHardwareInterface::on_configure(
+        const rclcpp_lifecycle::State & /*previous_state*/)
     {
-        std::vector<hardware_interface::StateInterface> state_interfaces;
-
-        // 导出关节相关的状态接口(位置，速度，扭矩)
-        for (size_t i = 0; i < info_.joints.size(); ++i)
+        // reset values always when configuring hardware
+        for (const auto &[name, descr] : joint_state_interfaces_)
         {
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &_jnt_position_state[i]));
-
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &_jnt_velocity_state[i]));
-
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_state[i]));
+            set_state(name, 0.0);
         }
-
-        state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("tool_IO"), std::string("AO0"), &_analog_tl_state));
-
-        for (size_t i = 0; i < 2; ++i)
+        for (const auto &[name, descr] : joint_command_interfaces_)
         {
-            state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("controller_IO"), std::string("AO").append(std::to_string(i)), &_analog_cl_states[i]));
+            set_command(name, 0.0);
         }
+        for (const auto &[name, descr] : gpio_state_interfaces_)
+        {
+            set_state(name, 0.0);
+        }
+        for (const auto &[name, descr] : gpio_command_interfaces_)
+        {
+            set_command(name, 0.0);
+        }
+        RCLCPP_INFO(get_logger(), "Successfully configured!");
 
-        state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("tool_IO"), std::string("DO0-7"), &_digital_tl_states));
-        state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("controller_IO"), std::string("DO0-15"), &_digital_cl_states));
-
-        // 导出
-        return state_interfaces;
+        return hardware_interface::CallbackReturn::SUCCESS;
     }
 
-    std::vector<hardware_interface::CommandInterface> FairinoHardwareInterface::export_command_interfaces()
-    {
-        std::vector<hardware_interface::CommandInterface> command_interfaces;
-        for (size_t i = 0; i < info_.joints.size(); ++i)
-        {
-            command_interfaces.emplace_back(hardware_interface::CommandInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &_jnt_position_command[i]));
+    // std::vector<hardware_interface::StateInterface> FairinoHardwareInterface::export_state_interfaces()
+    // {
+    //     std::vector<hardware_interface::StateInterface> state_interfaces;
 
-            //     command_interfaces.emplace_back(hardware_interface::CommandInterface(//预留的扭矩控制接口
-            //         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_command.at(i)));
-        }
+    //     // 导出关节相关的状态接口(位置，速度，扭矩)
+    //     for (size_t i = 0; i < info_.joints.size(); ++i)
+    //     {
+    //         state_interfaces.emplace_back(hardware_interface::StateInterface(
+    //             info_.joints[i].name, hardware_interface::HW_IF_POSITION, &_jnt_position_state[i]));
 
-        command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("tool_IO"), std::string("AI0"), &_analog_tl_command));
+    //         state_interfaces.emplace_back(hardware_interface::StateInterface(
+    //             info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &_jnt_velocity_state[i]));
 
-        for (size_t i = 0; i < 2; ++i)
-        {
-            command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("controller_IO"), std::string("AI").append(std::to_string(i)), &_analog_cl_commands[i]));
-        }
+    //         state_interfaces.emplace_back(hardware_interface::StateInterface(
+    //             info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_state[i]));
+    //     }
 
-        command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("tool_IO"), std::string("DI0-7"), &_digital_tl_commands));
-        command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("controller_IO"), std::string("DI0-15"), &_digital_cl_commands));
+    //     for (size_t i = 0; i < info_.gpios.size(); ++i) {
 
-        return command_interfaces;
-    }
+    //         for (size_t j = 0; j < info_.gpios[i].state_interfaces.size(); ++j) {
+    //         state_interfaces.emplace_back(hardware_interface::StateInterface(
+    //             info_.gpios[i].name, info_.gpios[i].state_interfaces[j].name, _hw_gpio_in[]));
+
+    //         }
+
+    //     }
+
+    //     // state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("tool_IO"), std::string("AO0"), &_analog_tl_state));
+
+    //     // for (size_t i = 0; i < 2; ++i)
+    //     // {
+    //     //     state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("controller_IO"), std::string("AO").append(std::to_string(i)), &_analog_cl_states[i]));
+    //     // }
+
+    //     // state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("tool_IO"), std::string("DO0-7"), &_digital_tl_states));
+    //     // state_interfaces.emplace_back(hardware_interface::StateInterface(std::string("controller_IO"), std::string("DO0-15"), &_digital_cl_states));
+
+    //     // 导出
+    //     return state_interfaces;
+    // }
+
+    // std::vector<hardware_interface::CommandInterface> FairinoHardwareInterface::export_command_interfaces()
+    // {
+    //     std::vector<hardware_interface::CommandInterface> command_interfaces;
+    //     for (size_t i = 0; i < info_.joints.size(); ++i)
+    //     {
+    //         command_interfaces.emplace_back(hardware_interface::CommandInterface(
+    //             info_.joints[i].name, hardware_interface::HW_IF_POSITION, &_jnt_position_command[i]));
+
+    //         //     command_interfaces.emplace_back(hardware_interface::CommandInterface(//预留的扭矩控制接口
+    //         //         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &_jnt_torque_command.at(i)));
+    //     }
+
+    //     command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("tool_IO"), std::string("AI0"), &_analog_tl_command));
+
+    //     for (size_t i = 0; i < 2; ++i)
+    //     {
+    //         command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("controller_IO"), std::string("AI").append(std::to_string(i)), &_analog_cl_commands[i]));
+    //     }
+
+    //     command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("tool_IO"), std::string("DI0-7"), &_digital_tl_commands));
+    //     command_interfaces.emplace_back(hardware_interface::CommandInterface(std::string("controller_IO"), std::string("DI0-15"), &_digital_cl_commands));
+
+    //     return command_interfaces;
+    // }
 
     hardware_interface::CallbackReturn FairinoHardwareInterface::on_activate(const rclcpp_lifecycle::State &previous_state)
     {
@@ -142,8 +177,11 @@ namespace fairino_hardware
             _jnt_velocity_state[i] = 0;
             _jnt_torque_state[i] = 0;
         }
-        _digital_cl_commands = 0;
-        _digital_cl_states = 0;
+        for (int i = 0; i < 14; i++)
+        {
+            _digital_cb_command[i] = 0;
+            _digital_cb_state[i] = 0;
+        }
         _digital_tl_commands = 0;
         _digital_tl_states = 0;
         _analog_tl_command = 0.0;
@@ -250,14 +288,14 @@ namespace fairino_hardware
             }
             //RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "ServoJ下发位置:%f,%f,%f,%f,%f,%f",\
             cmd.jPos[0],cmd.jPos[1],cmd.jPos[2],cmd.jPos[3],cmd.jPos[4],cmd.jPos[5]);
-            int returncode = _ptr_robot->ServoJ(&cmd,&extcmd,0,0,0.008,0,0);
+            int returncode = _ptr_robot->ServoJ(&cmd, &extcmd, 0, 0, 0.008, 0, 0);
             // int returncode = _ptr_robot->write(cmd, _analog_tl_command, _analog_cl_commands, _digital_tl_commands, _digital_cl_commands);
             if (returncode != 0)
             {
                 RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "ServoJ指令下发错误,错误码:%d", returncode);
             }
-            for 
-            int returncode = _ptr_robot->SetDO(&cmd,&extcmd,0,0,0.008,0,0);
+            for
+                int returncode = _ptr_robot->SetDO(&cmd, &extcmd, 0, 0, 0.008, 0, 0);
             if (returncode != 0)
             {
                 RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"), "SetDO指令下发错误,错误码:%d", returncode);

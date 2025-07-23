@@ -59,14 +59,8 @@ private:
   double _jnt_position_state[6];
   double _jnt_velocity_state[6];
   double _jnt_torque_state[6];
-  double _digital_cl_commands;
-  double _digital_cl_states;
-  double _digital_tl_commands;
-  double _digital_tl_states;
-  double _analog_tl_command;
-  double _analog_tl_state;
-  double _analog_cl_commands[2];
-  double _analog_cl_states[2];
+  double _hw_gpio_in[42];
+  double _hw_gpio_out[21];
   int _control_mode;
   std::string _controller_ip = CONTROLLER_IP_ADDRESS;
   std::unique_ptr<FRRobot> _ptr_robot;
