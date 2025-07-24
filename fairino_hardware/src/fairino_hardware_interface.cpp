@@ -376,7 +376,9 @@ FairinoHardwareInterface::write(const rclcpp::Time &time,
   if (_control_mode == 0) { // 位置控制模式
     if (std::any_of(
             joint_command_interfaces_.begin(), joint_command_interfaces_.end(),
-            [this](std::pair<std::string, hardware_interface::InterfaceDescription> c) { return not std::isfinite(get_command(c.first)); })) {
+            [this](
+                std::pair<std::string, hardware_interface::InterfaceDescription>
+                    c) { return not std::isfinite(get_command(c.first)); })) {
       return hardware_interface::return_type::ERROR;
     }
     JointPos cmd;
@@ -396,36 +398,47 @@ FairinoHardwareInterface::write(const rclcpp::Time &time,
                   "ServoJ指令下发错误,错误码:%d", returncode);
     }
 
-    returncode = _ptr_robot->SetToolAO(0, (float)get_command("tool_IO/AO0"), 0);
-    if (returncode != 0) {
-      RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
-                  "SetToolAO指令下发错误,错误码:%d", returncode);
+    if (get_command("control_box_IO/AO0") != get_state("control_box_IO/AO0")) {
+      returncode =
+          _ptr_robot->SetToolAO(0, (float)get_command("tool_IO/AO0"), 0);
+      if (returncode != 0) {
+        RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
+                    "SetToolAO指令下发错误,错误码:%d", returncode);
+      }
     }
 
     for (int i = 0; i < 2; i++) {
-
-      returncode = _ptr_robot->SetAO(
-          0, (float)get_command("control_box_IO/AO" + std::to_string(i)), 0);
-      if (returncode != 0) {
-        RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
-                    "SetAO指令下发错误,错误码:%d", returncode);
+      if (get_command("control_box_IO/AO" + std::to_string(i)) !=
+          get_state("control_box_IO/AO" + std::to_string(i))) {
+        returncode = _ptr_robot->SetAO(
+            0, (float)get_command("control_box_IO/AO" + std::to_string(i)), 0);
+        if (returncode != 0) {
+          RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
+                      "SetAO指令下发错误,错误码:%d", returncode);
+        }
       }
 
-      returncode = _ptr_robot->SetToolDO(
-          0, (uint8_t)get_command("tool_IO/DO" + std::to_string(i)), 1, 0);
-      if (returncode != 0) {
-        RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
-                    "SetToolDO指令下发错误,错误码:%d", returncode);
+      if (get_command("tool_IO/DO" + std::to_string(i)) !=
+          get_state("tool_IO/DO" + std::to_string(i))) {
+        returncode = _ptr_robot->SetToolDO(
+            0, (uint8_t)get_command("tool_IO/DO" + std::to_string(i)), 1, 0);
+        if (returncode != 0) {
+          RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
+                      "SetToolDO指令下发错误,错误码:%d", returncode);
+        }
       }
     }
 
     for (int i = 0; i < 16; i++) {
-
-      returncode = _ptr_robot->SetDO(
-          0, (float)get_command("control_box_IO/DO" + std::to_string(i)), 1, 0);
-      if (returncode != 0) {
-        RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
-                    "SetDO指令下发错误,错误码:%d", returncode);
+      if (get_command("control_box_IO/DO" + std::to_string(i)) !=
+          get_state("control_box_IO/DO" + std::to_string(i))) {
+        returncode = _ptr_robot->SetDO(
+            0, (float)get_command("control_box_IO/DO" + std::to_string(i)), 1,
+            0);
+        if (returncode != 0) {
+          RCLCPP_INFO(rclcpp::get_logger("FairinoHardwareInterface"),
+                      "SetDO指令下发错误,错误码:%d", returncode);
+        }
       }
     }
 
