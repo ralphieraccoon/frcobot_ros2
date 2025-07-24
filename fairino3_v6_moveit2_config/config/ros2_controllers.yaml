@@ -47,8 +47,8 @@
   ros__parameters:
     type: gpio_controllers/GpioCommandController
     gpios:
-      - ControlBox
-      - Tool
+      - control_box_IO
+      - tool_IO
     command_interfaces:
       control_box_IO:
         - interfaces:
@@ -98,7 +98,7 @@
           - DO13
           - DO14
           - DO15
-          - DO0
+          - DI0
           - DI1
           - DI2
           - DI3
